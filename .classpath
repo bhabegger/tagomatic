@@ -86,5 +86,7 @@
 	<classpathentry kind="lib" path="lib/imagmatching-lib/surfMatcher.jar"/>
 	<classpathentry kind="lib" path="lib/imagmatching-lib/wikipediaSearch.jar"/>
 	<classpathentry kind="lib" path="lib/openNLP/jwnl-1.3.3.jar"/>
+	<classpathentry kind="lib" path="lib/ExifExtractor/metadata-extractor-2.5.0-RC3.jar"/>
+	<classpathentry kind="lib" path="lib/ExifExtractor/xmpcore.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
