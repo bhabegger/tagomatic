@@ -5,14 +5,15 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-    <camelContext xmlns="http://camel.apache.org/schema/spring">
+	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFrontEnd" />
 
-		<bean id="extractInterestPoints" class="fr.cnrs.liris.tagomatic.image.InterestPointExtraction" />
-				
+    <camelContext xmlns="http://camel.apache.org/schema/spring">				
+
+
 		<route>
-			<from uri="file:///tmp/input/" />
-			<to uri="bean:extractInterestPoints" />
-			<to uri="file:///tmp/output" />
+			<from uri="file:///tmp/tagomatic/tags/input" />
+			<to uri="bean:tagRecommender" />
+			<to uri="file:///tmp/tagomatic/tags/output" />
 		</route>
 
     </camelContext>
