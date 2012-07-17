@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<oml:object-list xmlns:dc="http://purl.org/dc/terms"
+	xmlns:oml="http://objectml.org/ns/200905/ObjectML">
+	<oml:object xmlns:pict="http://objectml.org/ns/categories/media/"></oml:object>
+	
+<!--
+	private String photoTitle       -> @oml:title
+	private String photoUrl;         
+	private String photoFileUrl;
+	private double longitude ;
+    private double latitude ;
+    private double width;
+    private double height ;
+    private String uploadDate ; //": 22 January 2007"
+    private String ownerId;
+    private String ownerName; 
+    private String ownerUrl ;
+    private Set<String> tags = new HashSet<String>() ;
+    private String technichalTags;
+    private Date dateTaken;
+    private String description ;
+    //@TODO Add more properties
+-->	
+	<oml:object oml:title="[photoTitle]" oml:description="[description]" dc:spacial="[latitude],[longitude]"
+	    pict:width="[width]" pict:height="[height]" 
+		dc:created="[uploadDate]"  exif:DateTime="[dateTaken]" dc:owner="[ownerId]"
+		oml:store-id="90357e56-fa0e-42ae-8316-72d2396398e4" 
+		oml:datasource="flickr.com"
+		
+		pict:technicalTags="[technicalTags (space separated if not split into exif:* attributes)]">
+		<oml:resource xlink:href="[photoURL]" />
+	</oml:object>
+</oml:object-list>
