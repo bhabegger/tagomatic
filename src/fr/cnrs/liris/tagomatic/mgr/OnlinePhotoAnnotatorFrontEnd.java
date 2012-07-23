@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
  *
  */
 
-public class OnlinePhotoAnnotatorFrontEnd implements Processor{
+public class OnlinePhotoAnnotatorFrontEnd {
 
 
 	private float lat;
@@ -179,7 +179,7 @@ public class OnlinePhotoAnnotatorFrontEnd implements Processor{
 	 * @param lang The language of the articles.
 	 * @return Set of article suggestion if some are available and null otherwise
 	 */
-	private String[] suggestWikiArticle(Collection<String> tagRecommCleand, int maxTerms,String lang) {
+	public String[] suggestWikiArticle(Collection<String> tagRecommCleand, int maxTerms,String lang) {
 		
 		String wikiQuery = "";
 		
@@ -209,7 +209,7 @@ public class OnlinePhotoAnnotatorFrontEnd implements Processor{
 		Date startDate = new Date(startTime);
 		System.out.println("Starting Image Annotator: " + startDate);
 		
-		OnlinePhotoAnnotatorFrontEnd tagRec = new OnlinePhotoAnnotatorFrontEnd("E:/photos/2012-06-04 Hongk ong/100MEDIA/IMAG1695.jpg");
+		OnlinePhotoAnnotatorFrontEnd tagRec = new OnlinePhotoAnnotatorFrontEnd("E:/photos/Metz Zug/IMAG1360.jpg");
 				
 		tagRec.generateTagRecommentations();
 		
@@ -248,11 +248,18 @@ public class OnlinePhotoAnnotatorFrontEnd implements Processor{
 			
 		}
 		
-		
+		this.xmlTagRecommendation = createXMLTagRepresentation(orderedTags1, wikiSugg);
+	}
+
+	private String createXMLTagRepresentation(Map<String, Double> orderedTags1,
+			String[] wikiSugg) {
 		//Output tags:
 		StringBuffer xmlOutput = new StringBuffer();
 		xmlOutput.append("<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"no\"?>");
 		xmlOutput.append("\n");
+		xmlOutput.append("<Photo latitude=\""+this.lat+"\" longitude=\""+this.lon+"\">");
+		xmlOutput.append(this.photoURL);
+		xmlOutput.append("</Photo>");
 		xmlOutput.append("<wordlist>");
 		xmlOutput.append("\n");
 		System.out.println("----------------- Tag Ordered According to freqAllUsers -----------------------");
@@ -275,7 +282,7 @@ public class OnlinePhotoAnnotatorFrontEnd implements Processor{
 		
 		xmlOutput.append("</wordlist>\n");
 
-		this.xmlTagRecommendation = xmlOutput.toString();
+		return xmlOutput.toString();
 	}
 	
 	
@@ -320,29 +327,5 @@ public class OnlinePhotoAnnotatorFrontEnd implements Processor{
 		}
 		
 	}
-
-
-	@Override
-	public void process(Exchange exchange) throws Exception {
-		
-		//Get Image Path
-		Message in = exchange.getIn();
-		File input = in.getBody(File.class);
-		
-		String imagePath = input.getPath();
-		
-		OnlinePhotoAnnotatorFrontEnd tagRec = new OnlinePhotoAnnotatorFrontEnd(imagePath); 
-		
-		tagRec.generateTagRecommentations();
-		
-		Document output = XMLHelper.parse(tagRec.getXmlTagRecommendation());
-		
-		Message out = exchange.getOut();
-			
-		out.setBody(output);
-			
-		
-	}
-	
 
 }

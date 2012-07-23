@@ -5,11 +5,9 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFrontEnd" />
+	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFactory" />
 
-    <camelContext xmlns="http://camel.apache.org/schema/spring">				
-
-
+    <camelContext xmlns="http://camel.apache.org/schema/spring">
 		<route>
 			<from uri="file:///tmp/tagomatic/tags/input" />
 			<to uri="bean:tagRecommender" />
