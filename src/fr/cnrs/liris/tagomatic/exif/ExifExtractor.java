@@ -26,9 +26,9 @@ public class ExifExtractor {
          // obtain the Exif directory
             Directory directory = metadata.getDirectory(GpsDirectory.class);
 
-            String  lat = directory.getDescription(GpsDirectory.TAG_GPS_LATITUDE).replace('°', ',').replace('\'', ',').replace("\"","");
+            String  lat = directory.getDescription(GpsDirectory.TAG_GPS_LATITUDE).replace('Â°', ',').replace('\'', ',').replace("\"","");
             
-            String lon = directory.getDescription(GpsDirectory.TAG_GPS_LONGITUDE).replace('°', ',').replace('\'', ',').replace("\"","");
+            String lon = directory.getDescription(GpsDirectory.TAG_GPS_LONGITUDE).replace('Â°', ',').replace('\'', ',').replace("\"","");
 
             String[] latS = lat.split(",");
             String[] lonS = lon.split(",");

@@ -55,7 +55,7 @@ public class WordCleaner {
 		rv = rv.replace("]", "");
 		rv = rv.replace("%", "");
 		rv = rv.replace("$", "");
-		rv = rv.replace("ง", "");
+		rv = rv.replace("ยง", "");
 		rv = rv.replace("!", "");
 		rv = rv.replace("|", "");
 		rv = rv.replace("#", "");
