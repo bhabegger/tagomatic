@@ -6,8 +6,26 @@
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd"
 >
     
-    <import resource="file:///etc/109/api-spring.xml" />
-
+	<bean id="settings" class="org.objectml.util.SpringSettings">
+	  <property name="properties">
+	    <map>
+	      <entry  key="com.109lab.portal.static.location"
+	            value="http://static.dev.109experience.com" />
+	
+	      <entry  key="com.109lab.portal.resource.location"
+	          value="https://resource.dev.109experience.com" />
+	
+	      <entry  key="com.109lab.portal.event.location"
+	          value="http://api.dev.blaboum.com/v0/events/poll" />
+	
+	      <entry  key="com.109lab.portal.protected.location"
+	          value="http://protected.dev.blaboum.com" />
+	
+	      <entry  key="com.109lab.portal.private.location"
+	          value="http://private.dev.blaboum.com" />
+	    </map>
+	  </property>
+	</bean>
 	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFactory" />
 	<bean id="surfDescriptionExtractor" class="fr.cnrs.liris.tagomatic.image.SurfDescriptionExtractor" />
 
