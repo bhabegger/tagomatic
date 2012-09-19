@@ -1,0 +1,46 @@
+<project name="109Api" default="tagomatic.package" basedir=".">
+	<description>Ant file to build the api component</description>
+
+	<!-- set global properties for this build -->
+	<property name="version"	value="1.10" />
+	<property name="platform"	value="linux" />
+
+	<path id="project.class.path">
+		<fileset dir="/srv/pilot/lib/common"   includes="*.jar" />
+		<fileset dir="/srv/pilot/lib/web"   includes="*.jar" />
+		<fileset dir="lib"   includes="**/*.jar" />
+		<fileset file="/usr/share/java/junit4.jar" />
+		<pathelement path="${java.class.path}/"/>
+	</path>
+
+
+	<!-- set properties for lab109-portal -->
+	<property name="tagomatic.src"		location="src"/>
+	<property name="tagomatic.build"		location="build"/>
+	<property name="tagomatic.jar"		location="webapps/tagomatic/WEB-INF/lib/tagomatic.jar" />
+
+	<!--
+		****************************************************************
+	    * COMPILE
+	    ****************************************************************
+	-->
+	<target name="tagomatic.compile" description="Compile the [tagomatic] java source code" >
+		<delete dir="${tagomatic.build}"/>
+		<mkdir dir="${tagomatic.build}" />
+		<javac debug="on" srcdir="${tagomatic.src}" destdir="${tagomatic.build}" classpathref="project.class.path" includeantruntime="false" />
+	</target>
+
+	<!--
+		****************************************************************
+	    * PACKAGE
+	    ****************************************************************
+	-->
+	<target name="tagomatic.package" depends="tagomatic.compile" description="Package [lab109-tagomatic.jar]" >
+		<manifest file="${tagomatic.build}/MANIFEST.MF">
+	        <attribute name="Build-Date" value="${DSTAMP}"/>
+	        <attribute name="109Api-Version" value="${version}"/>
+	    </manifest>
+		<jar jarfile="${tagomatic.jar}" basedir="${tagomatic.build}" manifest="${tagomatic.build}/MANIFEST.MF" />
+	</target>
+</project>
+

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd"
+>
+    
+    <import resource="file:///etc/109/api-spring.xml" />
+
+	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFactory" />
+	<bean id="surfDescriptionExtractor" class="fr.cnrs.liris.tagomatic.image.SurfDescriptionExtractor" />
+
+	<bean id="renderers" class="java.util.HashMap">
+		<constructor-arg>
+			<map>
+<!-- 				<entry key=""	value="edit" /> -->
+			</map>
+		</constructor-arg>
+	</bean>
+	
+
+    <camelContext xmlns="http://camel.apache.org/schema/spring" xmlns:oml="http://objectml.org/ns/200905/ObjectML"
+       xmlns:xlink="http://www.w3.org/1999/xlink">
+    	<template id="producer" />
+
+    	<endpoint id="image.raw-geo-search"	uri="direct:image.raw-geo-search" />
+    	<endpoint id="image.surf-describe"	uri="direct:image.surf-describe" />
+    	<endpoint id="image.raw-sim-search"	uri="direct:image.raw-sim-search" />
+    	<endpoint id="image.search"	uri="direct:image.search" />
+    	<endpoint id="tag.summarize"	uri="direct:tag.summarize" />
+    	<endpoint id="concept.raw-lookup"	uri="direct:concept.raw-lookup" />
+    	<endpoint id="concept.search"	uri="direct:concept.search" />
+    	
+    	<route>
+    		<from uri="direct:image.raw-geo-search" />
+    		<convertBodyTo type="org.w3c.dom.Document" />
+    		
+    		<!-- TODO: replace stub with actual request -->
+    		<setBody>
+    			<javaScript>
+    				new java.io.File("/srv/tagomatic/tests/data/image-list.xml");
+    			</javaScript>
+    		</setBody>
+    		<to uri="log:raw-geo-search" />
+    	</route>
+    	
+    	<route>
+    		<from uri="direct:image.surf-describe" />
+    		<convertBodyTo type="org.w3c.dom.Document" />
+	   			
+   			<recipientList>
+   				<xpath resultType="java.lang.String">//oml:resource/@xlink:href</xpath>
+ 			</recipientList>
+ 			
+ 			<setHeader headerName="file">
+	 			<javaScript>java.io.File.createTempFile("surf-image-", "");</javaScript>
+ 			</setHeader>
+ 			<setHeader headerName="directory" >
+ 				<javaScript>request.headers.get("file").getParentFile().getAbsolutePath()</javaScript>
+ 			</setHeader>
+ 			<setHeader headerName="CamelFileName" >
+ 				<javaScript>request.headers.get("file").getName()</javaScript>
+ 			</setHeader>
+<!--  			<recipientList> -->
+<!--  				<simple>file://${in.headers.directory}</simple> -->
+<!--  			</recipientList> -->
+			<to uri="file:///tmp" />
+   			<to uri="log:surf-describe?showHeaders=true" />
+
+
+
+<!--    			<to uri="bean:surfDescriptionExtractor" /> -->
+<!--    			<to uri="direct:image.surf-description.store" /> -->
+    	</route>
+    	
+    	
+    	<route>
+    		<from uri="direct:image.surf-description.store" />
+    		<to uri="log:surf-description-store" />
+ 	   	</route>
+    	
+    	<!-- OLD ROUTE -->
+		<route>
+			<from uri="file:///tmp/tagomatic/tags/input" />
+			<to uri="bean:tagRecommender" />
+			<to uri="file:///tmp/tagomatic/tags/output" />
+		</route>
+
+    </camelContext>
+    
+</beans>

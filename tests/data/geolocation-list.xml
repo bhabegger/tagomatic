@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<oml:object-list xmlns:dc="http://purl.org/dc/terms"
+	xmlns:oml="http://objectml.org/ns/200905/ObjectML">
+	<oml:reference dc:spatial="48.85676,2.35099" />
+	<oml:reference dc:spatial="42.366662,-83.097839" />
+	<oml:reference dc:spatial="51.51323,-0.145283" />
+	<oml:reference dc:spatial="51.502973,-0.112953" />
+	<oml:reference dc:spatial="53.388288,-6.25676" />
+	<oml:reference dc:spatial="44.939833,4.447242" />
+</oml:object-list>

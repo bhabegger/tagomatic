@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<oml:object-list xmlns:dc="http://purl.org/dc/terms" xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:oml="http://objectml.org/ns/200905/ObjectML" xmlns:memory="http://109lab.com/ns/categories/content/memory">
+	<oml:object oml:id="http://109lab.com/ext/flickr/picture/7978967708" oml:category="http://109lab.com/ns/categories/content/memory" memory:type="picture">
+		<oml:resource dc:spatial="48.85676,2.35099" xlink:href="http://farm9.staticflickr.com/8037/7978967708_611a07c86f.jpg" />
+		<oml:tag-list>
+			<oml:reference oml:id="http://109lab.com/ext/flickr/tag/paris" oml:title="Paris" />
+			<oml:reference oml:id="http://109lab.com/ext/flickr/tag/hoteldeville" oml:title="Hotel de Ville" />
+			<oml:reference oml:id="http://109lab.com/ext/flickr/tag/statue" oml:title="Statue" />
+		</oml:tag-list>	
+	</oml:object>
+</oml:object-list>

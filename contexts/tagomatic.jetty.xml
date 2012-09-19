@@ -1,0 +1,8 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
+<Configure class="org.eclipse.jetty.webapp.WebAppContext">
+  <Set name="contextPath">/tagomatic</Set>
+  <Set name="resourceBase">/srv/tagomatic/webapps/tagomatic</Set>
+  <Set name="defaultsDescriptor"><SystemProperty name="jetty.home" default="."/>/etc/webdefault.xml</Set>
+  <Set name="extraClasspath"><SystemProperty name="jetty.classpath" default="."/>;/srv/api/lib/lab109-api.jar;/srv/pilot/lib/web/lab109-webportal.jar</Set>
+</Configure>
