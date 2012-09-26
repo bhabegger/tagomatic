@@ -13,10 +13,9 @@
 		<pathelement path="${java.class.path}/"/>
 	</path>
 
-
 	<!-- set properties for lab109-portal -->
 	<property name="tagomatic.src"		location="src"/>
-	<property name="tagomatic.build"		location="build"/>
+	<property name="tagomatic.build"	location="build"/>
 	<property name="tagomatic.jar"		location="webapps/tagomatic/WEB-INF/lib/tagomatic.jar" />
 
 	<!--
@@ -28,6 +27,9 @@
 		<delete dir="${tagomatic.build}"/>
 		<mkdir dir="${tagomatic.build}" />
 		<javac debug="on" srcdir="${tagomatic.src}" destdir="${tagomatic.build}" classpathref="project.class.path" includeantruntime="false" />
+		<copy todir="${tagomatic.build}">
+			<fileset dir="${tagomatic.src}" excludes="**/*.java" />
+		</copy>
 	</target>
 
 	<!--

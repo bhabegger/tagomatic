@@ -3,66 +3,260 @@
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd"
->
+       http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
     
+    <!-- HTTP interface configuration beans -->
 	<bean id="settings" class="org.objectml.util.SpringSettings">
 	  <property name="properties">
 	    <map>
-	      <entry  key="com.109lab.portal.static.location"
-	            value="http://static.dev.109experience.com" />
-	
-	      <entry  key="com.109lab.portal.resource.location"
-	          value="https://resource.dev.109experience.com" />
-	
-	      <entry  key="com.109lab.portal.event.location"
-	          value="http://api.dev.blaboum.com/v0/events/poll" />
-	
-	      <entry  key="com.109lab.portal.protected.location"
-	          value="http://protected.dev.blaboum.com" />
-	
-	      <entry  key="com.109lab.portal.private.location"
-	          value="http://private.dev.blaboum.com" />
 	    </map>
 	  </property>
 	</bean>
-	<bean id="tagRecommender" class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFactory" />
-	<bean id="surfDescriptionExtractor" class="fr.cnrs.liris.tagomatic.image.SurfDescriptionExtractor" />
-
 	<bean id="renderers" class="java.util.HashMap">
 		<constructor-arg>
 			<map>
-<!-- 				<entry key=""	value="edit" /> -->
+				<!-- <entry key="" value="edit" /> -->
 			</map>
 		</constructor-arg>
 	</bean>
 	
+	<!-- Processing beans -->
+	<bean id="tagRecommender"			class="fr.cnrs.liris.tagomatic.mgr.OnlinePhotoAnnotatorFactory" />
+	<bean id="surfDescriptionExtractor" class="fr.cnrs.liris.tagomatic.image.SurfDescriptionExtractor" />
+	
+	<!-- Utility beans -->
+	<bean id="omlMergeStrategy"			class="com.lab109.merge.EncapsulateAggregationStrategy" />
 
-    <camelContext xmlns="http://camel.apache.org/schema/spring" xmlns:oml="http://objectml.org/ns/200905/ObjectML"
-       xmlns:xlink="http://www.w3.org/1999/xlink">
+	<!-- Camel context -->
+    <camelContext xmlns="http://camel.apache.org/schema/spring"
+    	xmlns:oml="http://objectml.org/ns/200905/ObjectML"
+    	xmlns:xlink="http://www.w3.org/1999/xlink"
+    	xmlns:dc="http://purl.org/dc/terms">
+    	
     	<template id="producer" />
 
-    	<endpoint id="image.raw-geo-search"	uri="direct:image.raw-geo-search" />
-    	<endpoint id="image.surf-describe"	uri="direct:image.surf-describe" />
-    	<endpoint id="image.raw-sim-search"	uri="direct:image.raw-sim-search" />
-    	<endpoint id="image.search"	uri="direct:image.search" />
-    	<endpoint id="tag.summarize"	uri="direct:tag.summarize" />
-    	<endpoint id="concept.raw-lookup"	uri="direct:concept.raw-lookup" />
-    	<endpoint id="concept.search"	uri="direct:concept.search" />
+		<!--
+		*******************************************************************************
+			Endpoint declarations and documentation
+		*******************************************************************************
+		 -->
+		 
+		<!-- 
+    		Given a geolocated image URL
+    		* Finds a list of  Images both near the geolocation and visualy similar (according to SURF descriptions)
+
+			INPUT:
+				<oml:resource id="[SOURCE IMAGE URI"] dc:spatial="[GEOLOCATION]" />
+				
+			OUTPUT:
+				<oml:statement-list>
+    				<oml:statement rel="http://objectml.org/ns/tagomatic/surf-similar" tagomatic:score="[SIM SCORE]">
+    					<oml:resource id="[SOURCE IMAGE URI]" />
+    					<oml:resource id="[SIMILAR IMAGE URI" tagomatic:tags="[LIST OF TAGS]" />
+    				</oml:statement>
+    			</oml:statement-list>
     	
+    	 -->
+    	<endpoint id="image.search"				uri="direct:image.search" />
+		    	
+    	<!-- 
+    		Given a list of geolocated images
+    		* Finds the "best" wikipedia URL by calling the intermediate services
+    		
+    		INPUT:
+				<oml:reference dc:spatial="[GEOLOCATION]" />
+    			
+    		OUTPUT:
+	    		<oml:statement-list>
+    				<oml:statement rel="http://objectml.org/ns/tagomatic/taken-near" tagomatic:score="[SIM SCORE]">
+    					<oml:resource id="[SOURCE IMAGE URI]" />
+    					<oml:reference xlink:href="[WIKIPEDIA URL]" />
+    				</oml:statement>
+    			</oml:statement-list>
+    	 -->
+    	<endpoint id="concept.search"			uri="direct:concept.search" />
+    	
+    	
+		<!-- 
+			Given a geolocation:
+			* calls external services such as Panoramio and Flickr to find images near 
+			* keeps a cache of the images for future requests
+			
+			INPUT BODY:
+				<oml:reference dc:spatial="[GEOLOCATION]" />
+				
+			OUTPUT BODY:
+				<oml:object-list>
+					<oml:resource xlink:href="[IMAGE URI]" [IMAGE META-DATA] />
+					[...]
+				</oml:object-list>
+		 -->
+    	<endpoint id="image.raw-geo-search"		uri="direct:image.raw-geo-search" />
+    	
+    	<!-- 
+    		Given an image URL
+    		* Calculates the SURF descriptor
+			* Keeps a cache (serialized java object) for each image to be reused in future requests
+			
+			INPUT BODY:
+				<oml:resource id="[IMAGE URI]" />
+				
+			OUTPUT BODY:
+				java.io.ObjectInputSream
+    	 -->
+    	<endpoint id="image.surf-describe"		uri="direct:image.surf-describe" />
+    	
+    	<!-- 
+    		Given an image URL
+    		* Finds similar images using the surf descriptor cache
+    		
+    		INPUT BODY:
+    			<oml:resource id="[IMAGE URI]" />
+    			
+    		OUTPUT BODY:
+    			<oml:statement-list>
+    				<oml:statement rel="http://objectml.org/ns/tagomatic/surf-similar" [SIMILARITY META-INFO]>
+    					<oml:resource id="[SOURCE IMAGE URI]" />
+    					<oml:resource id="[SIMILAR IMAGE URI" />
+    				</oml:statement>
+    			</oml:statement-list>
+    	 -->
+    	<endpoint id="image.raw-sim-search"		uri="direct:image.raw-sim-search" />
+    	
+    	
+    	<!-- 
+    		Given a list of similarity statements
+    		* Generates a summarized list of tags
+    		
+    		INPUT:
+				<oml:statement-list>
+    				<oml:statement rel="http://objectml.org/ns/tagomatic/surf-similar" tagomatic:score="[SIM SCORE]">
+    					<oml:resource id="[SOURCE IMAGE URI]" />
+    					<oml:resource id="[SIMILAR IMAGE URI" tagomatic:tags="[LIST OF TAGS]" />
+    				</oml:statement>
+    			</oml:statement-list>
+    			
+    		OUTPUT:
+    			<oml:object oml:id="[SOURCE IMAGE URI]" oml:category="http://109lab.com/ns/categories/content/memory" memory:type="picture">
+    				<oml:resource dc:spatial="48.85676,2.35099" xlink:href="http://farm9.staticflickr.com/8037/7978967708_611a07c86f.jpg" />
+					<oml:tag-list>
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/paris"			oml:title="Paris" />
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/hoteldeville"	oml:title="Hotel de Ville" />
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/statue"			oml:title="Statue" />
+					</oml:tag-list>	
+				</oml:object>
+    	 -->
+    	<endpoint id="tag.summarize"			uri="direct:tag.summarize" />
+    	
+    	<!-- 
+    		Given a list of similarity statements / tag summaries
+    		* Proposes a scored list of wikipedia pages
+    		
+    		INPUT:
+    			<oml:object oml:id="[SOURCE IMAGE URI]" oml:category="http://109lab.com/ns/categories/content/memory" memory:type="picture">
+    				<oml:resource dc:spatial="48.85676,2.35099" xlink:href="http://farm9.staticflickr.com/8037/7978967708_611a07c86f.jpg" />
+					<oml:tag-list>
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/paris"			oml:title="Paris" />
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/hoteldeville"	oml:title="Hotel de Ville" />
+						<oml:reference oml:id="http://109lab.com/ext/flickr/tag/statue"			oml:title="Statue" />
+					</oml:tag-list>	
+				</oml:object>
+    			
+    		OUTPUT:
+	    		<oml:statement-list>
+    				<oml:statement rel="http://objectml.org/ns/tagomatic/taken-near" tagomatic:score="[SIM SCORE]">
+    					<oml:resource id="[SOURCE IMAGE URI]" />
+    					<oml:reference xlink:href="[WIKIPEDIA URL]" />
+    				</oml:statement>
+    			</oml:statement-list>
+    	 -->
+    	<endpoint id="concept.raw-lookup"		uri="direct:concept.raw-lookup" />
+ 
+ 
+ 		<!-- Make internal endpoints visible just for testing -->
+ 		<endpoint id="image.flickr-geo-search" uri="direct:image.flickr-geo-search" />
+ 
+ 		<!-- 
+ 			Given an image URL
+ 			* Returns a local file for the image (via a call to 109Lab's storage service)
+ 			
+ 			INPUT:
+ 				<oml:resource id="[SOUREC IMAGE URI]" />
+ 				
+ 			OUTPUT:
+ 				<oml:resource id="[SOURCE IMAGE URI]" oml:filename="" />
+ 		 -->
+ 		<endpoint id="resource.lookup"			uri="direct:resource.lookup" />
+ 		
+  		<!--
+		*******************************************************************************
+			Main service entry points
+		*******************************************************************************
+		 -->
+     	<route>
+    		<from uri="direct:image.search" />
+    		<to ref="image.raw-geo-search" />
+			<to ref="image.raw-sim-search" />
+    	</route>
+    	
+    	<route>
+			<from uri="direct:concept.search" />
+			<split strategyRef="omlMergeStrategy">
+				<xpath>//oml:reference</xpath>
+				<to ref="image.search" />				
+			</split>
+			<to uri="xslt:fr/cnrs/liris/tagomatic/xsl/concept_search_finalize.xsl" />
+		</route>
+ 
+ 		<!--
+		*******************************************************************************
+			Image search routes
+		*******************************************************************************
+		 --> 
     	<route>
     		<from uri="direct:image.raw-geo-search" />
     		<convertBodyTo type="org.w3c.dom.Document" />
     		
-    		<!-- TODO: replace stub with actual request -->
+    		<multicast strategyRef="omlMergeStrategy">
+    			<to uri="direct:image.flickr-geo-search" />
+    			<to uri="direct:image.panoramio-geo-search" />
+    		</multicast>
+
+    		<to uri="log:raw-geo-search" />
+    	</route>
+    	
+    	<route>
+    		<from uri="direct:image.flickr-geo-search" />
+    		<convertBodyTo type="org.w3c.dom.Document" />
+    		
+			<setHeader headerName="latitude">
+				<xpath resultType="java.lang.String">substring-before(//oml:*/@dc:spatial,',')</xpath>
+			</setHeader>
+			<setHeader headerName="longitude">
+				<xpath resultType="java.lang.String">substring-after(//oml:*/@dc:spatial,',')</xpath>
+			</setHeader>
+    		<setHeader headerName="CamelHttpQuery">
+    			<simple>method=flickr.photos.search&amp;api_key=[APIKEY]&amp;has_geo=1&amp;min_taken_date=1%2F1%2F2005&amp;lat=${in.header.latitude}&amp;lon=${in.header.longitude}&amp;radius=5&amp;radius_units=km&amp;page=1&amp;per_page=100</simple>
+    		</setHeader>
+    		<to uri="http4://api.flickr.com/services/rest/" />
+    	</route>
+    	
+    	<route>
+    		<from uri="direct:image.panoramio-geo-search" />
+    		<!-- TODO: replace stub with real request -->
     		<setBody>
     			<javaScript>
     				new java.io.File("/srv/tagomatic/tests/data/image-list.xml");
     			</javaScript>
     		</setBody>
-    		<to uri="log:raw-geo-search" />
     	</route>
+
     	
+    	<!--
+		*******************************************************************************
+			Image analysis routes
+		*******************************************************************************
+		 -->
     	<route>
     		<from uri="direct:image.surf-describe" />
     		<convertBodyTo type="org.w3c.dom.Document" />
@@ -97,14 +291,12 @@
     		<from uri="direct:image.surf-description.store" />
     		<to uri="log:surf-description-store" />
  	   	</route>
-    	
-    	<!-- OLD ROUTE -->
-		<route>
-			<from uri="file:///tmp/tagomatic/tags/input" />
-			<to uri="bean:tagRecommender" />
-			<to uri="file:///tmp/tagomatic/tags/output" />
-		</route>
-
-    </camelContext>
-    
+ 
+ 
+  		<!--
+		*******************************************************************************
+			Concept search routes
+		*******************************************************************************
+		 -->
+    </camelContext>    
 </beans>
