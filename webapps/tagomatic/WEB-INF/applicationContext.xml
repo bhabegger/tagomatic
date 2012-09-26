@@ -5,6 +5,8 @@
        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
        http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
     
+    <import resource="file:///etc/109/tagomatic.xml"/>
+    
     <!-- HTTP interface configuration beans -->
 	<bean id="settings" class="org.objectml.util.SpringSettings">
 	  <property name="properties">
@@ -219,7 +221,7 @@
     		
     		<multicast strategyRef="omlMergeStrategy">
     			<to uri="direct:image.flickr-geo-search" />
-    			<to uri="direct:image.panoramio-geo-search" />
+<!--     			<to uri="direct:image.panoramio-geo-search" /> -->
     		</multicast>
 
     		<to uri="log:raw-geo-search" />
@@ -228,17 +230,38 @@
     	<route>
     		<from uri="direct:image.flickr-geo-search" />
     		<convertBodyTo type="org.w3c.dom.Document" />
-    		
-			<setHeader headerName="latitude">
-				<xpath resultType="java.lang.String">substring-before(//oml:*/@dc:spatial,',')</xpath>
-			</setHeader>
-			<setHeader headerName="longitude">
-				<xpath resultType="java.lang.String">substring-after(//oml:*/@dc:spatial,',')</xpath>
-			</setHeader>
-    		<setHeader headerName="CamelHttpQuery">
-    			<simple>method=flickr.photos.search&amp;api_key=[APIKEY]&amp;has_geo=1&amp;min_taken_date=1%2F1%2F2005&amp;lat=${in.header.latitude}&amp;lon=${in.header.longitude}&amp;radius=5&amp;radius_units=km&amp;page=1&amp;per_page=100</simple>
-    		</setHeader>
-    		<to uri="http4://api.flickr.com/services/rest/" />
+    		<split  strategyRef="omlMergeStrategy">
+    		<xpath>//oml:reference</xpath>
+				<setHeader headerName="latitude">
+					<xpath resultType="java.lang.String">substring-before(//oml:*/@dc:spatial,',')</xpath>
+				</setHeader>
+				<setHeader headerName="longitude">
+					<xpath resultType="java.lang.String">substring-after(//oml:*/@dc:spatial,',')</xpath>
+				</setHeader>
+	    		<setHeader headerName="CamelHttpQuery">
+	    			<simple>method=flickr.photos.search&amp;api_key=${bean:com.lab109.tagomatic.flickr.apiKey.toString}&amp;has_geo=1&amp;min_taken_date=1%2F1%2F2005&amp;lat=${in.header.latitude}&amp;lon=${in.header.longitude}&amp;radius=5&amp;radius_units=km&amp;page=1&amp;per_page=3</simple>
+	    		</setHeader>
+	    		<to uri="http4://api.flickr.com/services/rest/" />
+	    		<convertBodyTo type="java.lang.String" />
+	    		<split strategyRef="omlMergeStrategy">
+	    			<xpath>//photo</xpath>
+					<setHeader headerName="id">
+						<xpath resultType="java.lang.String">//photo/@id</xpath>
+					</setHeader>
+					<setHeader headerName="secret">
+						<xpath resultType="java.lang.String">//photo/@secret</xpath>
+					</setHeader>
+					<setHeader headerName="CamelHttpQuery">
+	   					<simple>method=flickr.photos.getInfo&amp;api_key=${bean:com.lab109.tagomatic.flickr.apiKey.toString}&amp;photo_id=${header.id}&amp;secret=${header.secret}</simple>
+	   				</setHeader>
+	   				<to uri="http4://api.flickr.com/services/rest/" />
+	   				<convertBodyTo type="java.lang.String" />
+	   				<to uri="log:flickr-photo" />
+	    		</split>
+	    	</split>
+    		<to uri="file:///tmp/?fileName=flickr-out.xml" />
+    		<to uri="xslt:fr/cnrs/liris/tagomatic/xsl/flickrphoto2oml.xsl" />
+    		<to uri="file:///tmp/?fileName=flickr-out-transformed.xml" />
     	</route>
     	
     	<route>
