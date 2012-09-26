@@ -3,8 +3,6 @@
 	xmlns:dc="http://purl.org/dc/terms"
     xmlns:oml="http://objectml.org/ns/200905/ObjectML"
     xmlns:xlink="http://www.w3.org/1999/xlink">
-    <xsl:param name="latitude" />
-    <xsl:param name="longitude" />
     
     <xsl:template match="/">
     	<oml:object-list>
